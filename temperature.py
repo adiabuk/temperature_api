@@ -14,7 +14,13 @@ from flask import Flask
 
 DATA = None
 HOME = os.getenv("HOME")
-API_KEY = open(HOME + "/.weatherkey", "r").readlines()[0].strip()
+try:
+    API_KEY = open(HOME + "/.weatherkey", "r").readlines()[0].strip()
+except (FileNotFoundError, PermissionError):
+    API_KEY = os.getenv("API_KEY")
+if API_KEY is None:
+   sys.exit('API Key not found, unable to proceed')
+
 URL = ('http://api.worldweatheronline.com/premium/v1/weather.ashx?key='
        '{0}&q=London&format=json&num_of_days=3&tp=1'.format(API_KEY))
 TEMP_THRESHOLD = 27
