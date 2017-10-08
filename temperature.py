@@ -2,7 +2,13 @@
 #pylint: disable=global-statement
 
 """
-http://tinyurl.com/filtest
+Small API Server to return temperature data
+Author: Amro Diab
+Date: 06/10/17
+License: GPL3
+See the accompanying LICENSE file for terms.
+
+Based on exercise from http://tinyurl.com/filtest
 """
 
 import json
