@@ -40,6 +40,7 @@ TIMER = 3600
 FLASK_APP = Flask(__name__)
 SCHED = sched.scheduler(time.time, time.sleep)
 
+
 def schedule_data(scheduler):
     """
     Scheduler function for fetching data hourly
@@ -85,7 +86,11 @@ def main():
     # Scheduler will handle future runs
     SCHED.enter(0, 1, schedule_data, (SCHED,))
     background_thread = threading.Thread(target=SCHED.run, args=())
-    background_thread.start()
+    background_thread.daemon = True
+    try:
+        background_thread.start()
+    except (KeyboardInterrupt, SystemExit):
+        sys.exit(1)
 
     # start Flask
     FLASK_APP.run(debug=True, threaded=True)
