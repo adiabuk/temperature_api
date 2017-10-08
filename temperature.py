@@ -28,7 +28,7 @@ if API_KEY is None:
     sys.exit('API Key not found, unable to proceed')
 
 URL = ('http://api.worldweatheronline.com/premium/v1/weather.ashx?key='
-       '{0}&q=London&format=json&num_of_days=3&tp=1'.format(API_KEY))
+       '{0}&q=London&format=json&num_of_days=10&tp=1'.format(API_KEY))
 TEMP_THRESHOLD = 27
 TIMER = 3600
 FLASK_APP = Flask(__name__)
@@ -43,7 +43,7 @@ def schedule_data(scheduler):
     global DATA
     try:
         DATA = get_data(URL)
-        sys.stdout.write("Successfullly fetched data")
+        sys.stdout.write("Successfully fetched data\n")
     except urllib2.URLError:
         sys.stderr.write("Error opening URL\n")
 
@@ -55,14 +55,20 @@ def get_data(url):
     json_data = json.loads(data)
     return json_data
 
-
-
 @FLASK_APP.route('/time_to_heatwave', methods=['GET'])
 def time_to_heatwave():
     """
     API endpoint to return number of hours to next heatwave as JSON
     """
     return '{"hours_until_heatwave": %s}'% calculate_time()
+
+@FLASK_APP.route('/next_10_days', methods=['GET'])
+def next_10_days():
+    """
+    API endpoint to return next 10 days max temperature
+    """
+
+    return '{"next_10_days_max": %s' %calc_next_10_days()
 
 def main():
     """
@@ -78,6 +84,17 @@ def main():
     # start Flask
     FLASK_APP.run(debug=True, threaded=True)
 
+def calc_next_10_days():
+    """fetch and return the next 10 days max temperature """
+
+    if DATA is None:
+        return "No Data"
+
+    temp_list = []
+    for day in range(0, 10):
+        temp_list.append(DATA['data']['weather'][day]['maxtempC'])
+    return temp_list
+
 def calculate_time():
     """
     Calculate and return time to next heatwave if data is present
@@ -89,7 +106,7 @@ def calculate_time():
 
     hours_until_heatwave = "None"
     overall_hours = 0    # keep count of number of hours accross days
-    for day in range(0, 3):  # iterate through days
+    for day in range(0, 4):  # iterate through days
         for hour in range(0, 23,):  # iterate through hours in a day
             overall_hours += 1  # increment overall hours
             # get temp for current hour
